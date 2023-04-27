@@ -1,2 +1,4 @@
-# NPVP
-Official implementation of A unified model for continuous conditional video prediction
+# NPVP: A unified model for continuous conditional video prediction
+https://arxiv.org/abs/2210.05810
+
+To be constructed

@@ -1,0 +1,85 @@
+Env:
+    world_size: 1
+    rand_seed: 3047
+    port: '12355'
+    strategy: 'ddp_find_unused_parameters_false'
+    visual_callback: True
+
+Dataset:
+    name: "KITTI" #Name of the dataset, 'KTH', 'MNIST', 'BAIR', 'SMMNIST'
+    dir: "/home/travail/xiyex/KITTI_Processed"
+    dev_set_size: null
+    num_workers: 16
+    img_channels: 3
+    num_past_frames: 4
+    num_future_frames: 5
+    test_num_past_frames: 4
+    test_num_future_frames: 5
+    batch_size: 16
+    phase: 'deploy' #'debug' phase, split train/val; 'deploy' phase, no val set
+
+AE:
+    ckpt_save_dir: "/home/travail/xiyex/VPTR2_ckpts/KITTI_ResnetAE_L1_no3d"
+    tensorboard_save_dir: "/home/travail/xiyex/VPTR2_ckpts/KITTI_ResnetAE_L1_no3D_tensorboard"
+    resume_ckpt: null #null or path string to the resuem checkpoint
+    start_epoch: 0
+
+    epochs: 500
+    AE_lr: 1e-4
+    ngf: 32
+    n_downsampling: 4
+    num_res_blocks: 3
+    out_layer: 'Tanh'
+    learn_3d: False #if True, violates permutation invariant
+
+    log_per_epochs: 2
+
+Predictor:
+    ckpt_save_dir: "/home/travail/xiyex/VPTR2_ckpts/KITTI_Predictor_VFP_stochastic_4to5"
+    tensorboard_save_dir: "/home/travail/xiyex/VPTR2_ckpts/KITTI_Predictor_VFP_stochastic_4to5_tensorboard"
+    resume_ckpt: null
+    init_det_ckpt_for_vae: null
+    resume_AE_ckpt: "/home/travail/xiyex/VPTR2_ckpts/KITTI_ResnetAE_L1_no3d/AE-epoch=499.ckpt"
+    start_epoch: 0
+    
+    epochs: 500
+    log_per_epochs: 5
+
+    rand_context: False #use random context for the learning
+    min_lo: 2 #Minimum length of the observed clip, not used if rand_context is False
+    max_lo: 10 #maximum length of the observed clip, not used if rand_context is False
+
+    VFI: False #video frame interpolation training mode
+    context_num_p: 5 #number of past frames
+    context_num_f: 5 #number of future frames
+    num_interpolate: 5 #number of frames to interpolate, context_num_p + context_num_f + num_interpolate == cfg.Dataset.num_past_frames + cfg.Dataset.num_future_frames
+
+    max_H: 8
+    max_W: 8
+    max_T: 9
+
+    embed_dim: 512
+    fuse_method: 'Add'
+    param_free_norm_type: 'layer'
+    evt_former: True #if use VidHRFormerEncoder to learn event coding (other than mean)
+    learn_evt_token: False
+    evt_former_num_layers: 4 #not used if evt_former is False
+    evt_hidden_channels: 256
+    evt_n_layers: 1
+    stochastic: True
+    transformer_layers: 8
+
+    predictor_lr: 1e-4
+    max_grad_norm: 1.0
+    use_cosine_scheduler: True
+    scheduler_eta_min: 1e-7
+    scheduler_T0: 150
+
+    lam_PF_L1: 0.01 #weight for the predicted feature l1 loss
+    KL_beta: 1e-6 #1e-6 for SMMNIST and BAIR, 1e-8 for KTH
+
+    use_gan: False
+    lam_gan: 0.001
+    ndf: 64 #Discriminator ndf
+
+    
