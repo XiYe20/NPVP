@@ -1,0 +1,85 @@
+Env:
+    world_size: 1
+    rand_seed: 3047
+    port: '12355'
+    strategy: 'ddp_find_unused_parameters_false'
+    visual_callback: True ###!!!!!Set this to be False for Multi-GPU training, otherwise the training would stuck
+
+Dataset:
+    name: "KITTI" #Name of the dataset, 'KTH', 'SMMNIST', 'BAIR', 'Cityscapes', 'KITTI'
+    dir: "./KITTI_Processed" #Dataset Folder
+    dev_set_size: null #number of examples for dev set
+    num_workers: 16
+    img_channels: 3
+    num_past_frames: 4 #For all experiments, we take a video sample with the length of (num_past_frames + num_future_frames) from dataset
+    num_future_frames: 5
+    test_num_past_frames: 4
+    test_num_future_frames: 5
+    batch_size: 16
+    phase: 'deploy' #'debug' phase, split train/val; 'deploy' phase, no val set
+
+#Configuration for the autoencoder
+AE:
+    ckpt_save_dir: "./NPVP_ckpts/KITTI_ResnetAE" #autoencoder checkpoinrt save dir
+    tensorboard_save_dir: "./NPVP_ckpts/KITTI_ResnetAE_tensorboard"
+    resume_ckpt: null #null or path string for the resume checkpoint
+    start_epoch: 0
+
+    epochs: 500
+    AE_lr: 1e-4
+    ngf: 32
+    n_downsampling: 4
+    num_res_blocks: 3
+    out_layer: 'Tanh' #'Tanh' for all datasets, except SMMNIST; for SMMNIST, set to be 'Sigmoid'
+    learn_3d: False #if True, violates permutation invariant
+
+    log_per_epochs: 2 #training log frequency
+
+#Configuration for the NP-based predictor
+Predictor:
+    ckpt_save_dir: "./NPVP_ckpts/KITTI_Predictor_VFP_stochastic_4to5"
+    tensorboard_save_dir: "./NPVP_ckpts/KITTI_Predictor_VFP_stochastic_4to5_tensorboard"
+    resume_ckpt: null #null or path string for the resume checkpoint
+    init_det_ckpt_for_vae: null #null or path string for a trained deterministic model, which serves as the initialization of stochastic model
+    resume_AE_ckpt: "./NPVP_ckpts/KITTI_ResnetAE/AE-epoch=499.ckpt" #path string for the trained autoencoder in stage one.
+    start_epoch: 0
+    
+    epochs: 500
+    log_per_epochs: 5 #training log frequency
+
+    rand_context: False #use random context for the learning (i.e.,for unified model)
+    min_lo: 3 #Minimum length of the observed clip, not used if rand_context is False
+    max_lo: 6 #maximum length of the observed clip, not used if rand_context is False
+
+    VFI: False #video frame interpolation training mode
+    context_num_p: 2 #number of past frames
+    context_num_f: 2 #number of future frames
+    num_interpolate: 5 #number of frames to interpolate, context_num_p + context_num_f + num_interpolate == cfg.Dataset.num_past_frames + cfg.Dataset.num_future_frames
+
+    max_H: 8 #Height for the frame visual feature extracted by the CNN encoder
+    max_W: 8 #Width for the frame visual feature extracted by the CNN encoder
+    max_T: 9 #!! equals to (num_past_frames + num_future_frames) in the Dataset configuration
+
+    embed_dim: 512 #Channels for the frame visual feature extracted by the CNN encoder
+    fuse_method: 'Add'
+    param_free_norm_type: 'layer'
+    evt_former: True #if use VidHRFormerEncoder to learn event coding (other than mean)
+    evt_former_num_layers: 4 #number of Transformer block for event encoding VidHRFormerEncoder, not used if evt_former is False
+    evt_hidden_channels: 256 #number of channels for event coding
+    stochastic: False #True for NPVP-S (stochastic), False for NPVP-D (deterministic)
+    transformer_layers: 8 #number of Transformer block for Transformer decoder
+
+    predictor_lr: 1e-4
+    max_grad_norm: 1.0
+    use_cosine_scheduler: True
+    scheduler_eta_min: 1e-7
+    scheduler_T0: 150 #Epochs for each cycle of cosine learning rate schedule
+
+    lam_PF_L1: 0.01 #weight for the predicted feature l1 loss
+    KL_beta: 1e-8 #1e-6 for SMMNIST and BAIR, 1e-8 for all other dataset
+
+    use_gan: False #GAN loss is Deprecated, not used in the experiments.
+    lam_gan: 0.001
+    ndf: 64 #Discriminator ndf
+
+    

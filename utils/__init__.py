@@ -1,5 +1,5 @@
 from .dataset import KTHDataset, VidCenterCrop, VidPad, VidResize, BAIRDataset, VidCrop, MovingMNISTDataset, ClipDataset, KITTIDataset
-from .dataset import VidRandomHorizontalFlip, VidRandomVerticalFlip, Human36MDataset, StochasticMovingMNIST, mean_std_compute
+from .dataset import VidRandomHorizontalFlip, VidRandomVerticalFlip, StochasticMovingMNIST, mean_std_compute
 from .dataset import VidToTensor, VidNormalize, VidReNormalize, get_dataloader, LitDataModule
 from .misc import NestedTensor, set_seed
 from .train_summary import save_ckpt, load_ckpt, init_loss_dict, write_summary, resume_training, write_code_files, show_AE_samples, show_predictor_samples

@@ -43,11 +43,6 @@ class LitDataModule(pl.LightningDataModule):
             self.train_transform = transforms.Compose([VidResize((128, 128)), VidRandomHorizontalFlip(0.5), VidRandomVerticalFlip(0.5), VidToTensor(), self.norm_transform])
             self.test_transform = transforms.Compose([VidResize((128, 128)), VidToTensor(), self.norm_transform])
 
-        if cfg.Dataset.name == 'MNIST':
-            self.renorm_transform = VidReNormalize(mean = 0., std = 1.0)
-            self.train_transform = transforms.Compose([VidRandomHorizontalFlip(0.5), VidRandomVerticalFlip(0.5), VidToTensor()])
-            self.test_transform = VidToTensor()
-        
         if cfg.Dataset.name == 'SMMNIST':
             self.renorm_transform = VidReNormalize(mean = 0., std = 1.0)
             self.train_transform = self.test_transform = VidToTensor()
@@ -61,12 +56,6 @@ class LitDataModule(pl.LightningDataModule):
         if cfg.Dataset.name == 'CityScapes':
             self.norm_transform = VidNormalize((0.31604213, 0.35114038, 0.3104223),(1.2172801, 1.3219808, 1.2082524))
             self.renorm_transform = VidReNormalize((0.31604213, 0.35114038, 0.3104223),(1.2172801, 1.3219808, 1.2082524))
-            self.train_transform = transforms.Compose([VidToTensor(), self.norm_transform])
-            self.test_transform = transforms.Compose([VidToTensor(), self.norm_transform])
-        
-        if cfg.Dataset.name == 'Human36M':
-            self.norm_transform = VidNormalize((0.3218826651573181, 0.3218834698200226, 0.3218916356563568), (2.1493000984191895, 2.1493215560913086, 2.149362564086914))
-            self.renorm_transform = VidReNormalize((0.3218826651573181, 0.3218834698200226, 0.3218916356563568), (2.1493000984191895, 2.1493215560913086, 2.149362564086914))
             self.train_transform = transforms.Compose([VidToTensor(), self.norm_transform])
             self.test_transform = transforms.Compose([VidToTensor(), self.norm_transform])
 
@@ -105,10 +94,6 @@ class LitDataModule(pl.LightningDataModule):
                                                    num_past_frames = self.cfg.Dataset.num_past_frames, num_future_frames = self.cfg.Dataset.num_future_frames,
                                                    min_lo = self.cfg.Predictor.min_lo, max_lo = self.cfg.Predictor.max_lo)()
 
-            if self.cfg.Dataset.name == 'MNIST':
-                self.train_set = MovingMNISTDataset(Path(self.cfg.Dataset.dir).joinpath('moving-mnist-train.npz'), self.train_transform, min_lo = self.cfg.Predictor.min_lo, max_lo = self.cfg.Predictor.max_lo)
-                self.val_set = MovingMNISTDataset(Path(self.cfg.Dataset.dir).joinpath('moving-mnist-valid.npz'), self.train_transform, min_lo = self.cfg.Predictor.min_lo, max_lo = self.cfg.Predictor.max_lo)
-            
             if self.cfg.Dataset.name == 'SMMNIST':
                 self.train_set = StochasticMovingMNIST(True, Path(self.cfg.Dataset.dir), self.cfg.Dataset.num_past_frames, self.cfg.Dataset.num_future_frames, self.train_transform, min_lo = self.cfg.Predictor.min_lo, max_lo = self.cfg.Predictor.max_lo)
                 train_val_ratio = 0.95
@@ -117,10 +102,6 @@ class LitDataModule(pl.LightningDataModule):
                 self.train_set, self.val_set = random_split(self.train_set, [SMMNIST_train_set_length, SMMNIST_val_set_length],
                                                             generator=torch.Generator().manual_seed(2021))
             
-            if self.cfg.Dataset.name == 'Human36M':
-                self.train_set = Human36MDataset(Path(self.cfg.Dataset.dir).joinpath('train'), self.train_transform, color_mode = 'RGB', num_past_frames = self.cfg.Dataset.num_past_frames, num_future_frames = self.cfg.Dataset.num_future_frames, min_lo = self.cfg.Predictor.min_lo, max_lo = self.cfg.Predictor.max_lo)()
-                self.val_set = Human36MDataset(Path(self.cfg.Dataset.dir).joinpath('valid'), self.train_transform, color_mode = 'RGB', num_past_frames = self.cfg.Dataset.num_past_frames, num_future_frames = self.cfg.Dataset.num_future_frames, min_lo = self.cfg.Predictor.min_lo, max_lo = self.cfg.Predictor.max_lo)()
-
             #Use all training dataset for the final training
             if self.cfg.Dataset.phase == 'deploy':
                 self.train_set = ConcatDataset([self.train_set, self.val_set])
@@ -153,15 +134,10 @@ class LitDataModule(pl.LightningDataModule):
                 self.test_set = CityScapesDataset(Path(self.cfg.Dataset.dir).joinpath('test'), self.train_transform, color_mode = 'RGB', 
                                                    num_past_frames = self.cfg.Dataset.num_past_frames, num_future_frames = self.cfg.Dataset.num_future_frames,
                                                    min_lo = self.cfg.Predictor.min_lo, max_lo = self.cfg.Predictor.max_lo)()
-            if self.cfg.Dataset.name == 'MNIST':
-                self.test_set = MovingMNISTDataset(Path(self.cfg.Dataset.dir).joinpath('moving-mnist-test.npz'), self.test_transform, min_lo = self.cfg.Predictor.min_lo, max_lo = self.cfg.Predictor.max_lo)
-            
+
             if self.cfg.Dataset.name == 'SMMNIST':
                 self.test_set = StochasticMovingMNIST(False, Path(self.cfg.Dataset.dir), self.cfg.Dataset.test_num_past_frames, self.cfg.Dataset.test_num_future_frames, self.train_transform, min_lo = self.cfg.Predictor.min_lo, max_lo = self.cfg.Predictor.max_lo)
             
-            if self.cfg.Dataset.name == 'Human36M':
-                self.train_set = Human36MDataset(Path(self.cfg.Dataset.dir).joinpath('test'), self.train_transform, color_mode = 'RGB', num_past_frames = self.cfg.Dataset.test_num_past_frames, num_future_frames = self.cfg.Dataset.test_num_future_frames, min_lo = self.cfg.Predictor.min_lo, max_lo = self.cfg.Predictor.max_lo)()
-                
             self.len_test_loader = len(self.test_dataloader())
         
 
@@ -227,17 +203,6 @@ def get_dataloader(data_set_name, batch_size, data_set_dir, test_past_frames = 1
         KITTITrainData = KITTIDataset(data_set_dir, [10, 11, 12, 13], transform = test_transform, train = False, val = False,
                                         num_past_frames= test_past_frames, num_future_frames=test_future_frames)
         test_set = KITTITrainData()
-
-
-    elif data_set_name == 'MNIST':
-        renorm_transform = VidReNormalize(mean = 0., std = 1.0)
-        train_transform = transforms.Compose([VidRandomHorizontalFlip(0.5), VidRandomVerticalFlip(0.5), VidToTensor()])
-        test_transform = VidToTensor()
-
-        dataset_dir = Path(data_set_dir)
-        train_set = MovingMNISTDataset(dataset_dir.joinpath('moving-mnist-train.npz'), train_transform)
-        val_set = MovingMNISTDataset(dataset_dir.joinpath('moving-mnist-valid.npz'), train_transform)
-        test_set = MovingMNISTDataset(dataset_dir.joinpath('moving-mnist-test.npz'), test_transform)
     
     elif data_set_name == 'SMMNIST':
         renorm_transform = VidReNormalize(mean = 0., std = 1.0)
@@ -247,25 +212,6 @@ def get_dataloader(data_set_name, batch_size, data_set_dir, test_past_frames = 1
         train_set = StochasticMovingMNIST(True, dataset_dir, num_past_frames=5, num_future_frames=10, transform=train_transform)
         val_set = StochasticMovingMNIST(False, dataset_dir, num_past_frames=5, num_future_frames=10, transform=test_transform)
         test_set = StochasticMovingMNIST(False, dataset_dir, num_past_frames=test_past_frames, num_future_frames=test_future_frames, transform=test_transform)
-
-    elif data_set_name == 'MNIST-block':
-        renorm_transform = VidReNormalize(mean = 0., std = 1.0)
-        train_transform = transforms.Compose([VidRandomHorizontalFlip(0.5), VidRandomVerticalFlip(0.5), VidToTensor()])
-        test_transform = VidToTensor()
-
-        dataset_dir = Path(data_set_dir)
-        train_set = MovingMNISTDataset(dataset_dir.joinpath('moving-mnist-train-block.npz'), train_transform)
-        val_set = MovingMNISTDataset(dataset_dir.joinpath('moving-mnist-valid-block.npz'), train_transform)
-        test_set = MovingMNISTDataset(dataset_dir.joinpath('moving-mnist-test-block.npz'), test_transform)
-    elif data_set_name == 'MNIST-blockfp':
-        renorm_transform = VidReNormalize(mean = 0., std = 1.0)
-        train_transform = transforms.Compose([VidRandomHorizontalFlip(0.5), VidRandomVerticalFlip(0.5), VidToTensor()])
-        test_transform = VidToTensor()
-
-        dataset_dir = Path(data_set_dir)
-        train_set = MovingMNISTDataset(dataset_dir.joinpath('moving-mnist-train-blockfp.npz'), train_transform)
-        val_set = MovingMNISTDataset(dataset_dir.joinpath('moving-mnist-valid-blockfp.npz'), train_transform)
-        test_set = MovingMNISTDataset(dataset_dir.joinpath('moving-mnist-test-blockfp.npz'), test_transform)
     
     
     elif data_set_name == 'BAIR':
@@ -300,19 +246,6 @@ def get_dataloader(data_set_name, batch_size, data_set_dir, test_past_frames = 1
         test_set = CityScapesDataset(dataset_dir.joinpath('test'), transform, color_mode = 'RGB', 
                                 num_past_frames = test_past_frames, num_future_frames = test_future_frames)()
 
-    elif data_set_name == 'Human36M':
-        dataset_dir = Path(data_set_dir)
-        train_dir = dataset_dir.joinpath('train')
-        test_dir = dataset_dir.joinpath('test')
-        valid_dir = dataset_dir.joinpath('valid')
-        norm_transform = VidNormalize((0.3218826651573181, 0.3218834698200226, 0.3218916356563568), (2.1493000984191895, 2.1493215560913086, 2.149362564086914))
-        renorm_transform = VidReNormalize((0.3218826651573181, 0.3218834698200226, 0.3218916356563568), (2.1493000984191895, 2.1493215560913086, 2.149362564086914))
-
-        transform = transforms.Compose([VidToTensor(), norm_transform])
-        train_set = Human36MDataset(train_dir, transform, color_mode = 'RGB', num_past_frames = 10, num_future_frames = 10, min_lo = None, max_lo = None)()
-        test_set = Human36MDataset(test_dir, transform, color_mode = 'RGB', num_past_frames = test_past_frames, num_future_frames = test_future_frames, min_lo = None, max_lo = None)()
-        val_set = Human36MDataset(valid_dir, transform, color_mode = 'RGB', num_past_frames = 10, num_future_frames = 10, min_lo = None, max_lo = None)()
-        
     if dev_set_size is not None:
         train_set, _ = random_split(train_set, [dev_set_size, len(train_set) - dev_set_size], generator=torch.Generator().manual_seed(2021))
         val_set, _ = random_split(val_set, [dev_set_size, len(val_set) - dev_set_size], generator=torch.Generator().manual_seed(2021))
@@ -425,62 +358,6 @@ class KTHDataset(object):
                 return_folders.append(ff)
 
         return return_folders
-
-class Human36MDataset(object):
-    """
-    Human36M dataset, a wrapper for ClipDataset
-    the original frame size is (H, W) = (64, 64)
-    The train and test frames has been previously splitted: ref "Self-Supervised Visual Planning with Temporal Skip Connections"
-    """
-    def __init__(self, frames_dir: str, transform, color_mode = 'RGB', 
-                 num_past_frames = 10, num_future_frames = 10, min_lo = None, max_lo = None):
-        """
-        Args:
-            frames_dir --- Directory of extracted video frames and original videos.
-            transform --- trochvison transform functions
-            color_mode --- 'RGB' or 'grey_scale' color mode for the dataset
-            num_past_frames --- number of past frames
-            num_future_frames --- number of future frames
-            clip_length --- number of frames for each video clip example for model
-            min_lo --- minimum length for observation, for later randomly selection of the observations
-            max_lo --- maximum length for observation, for later randomly selection of the observations
-        """
-        self.frames_path = Path(frames_dir).absolute()
-        self.num_past_frames = num_past_frames
-        self.num_future_frames = num_future_frames
-        self.clip_length = num_past_frames + num_future_frames
-        self.transform = transform
-        self.color_mode = color_mode
-        self.min_lo = min_lo
-        self.max_lo = max_lo
-
-        self.clips = self.__getClips__()
-        
-
-    def __call__(self):
-        """
-        Returns:
-            data_set --- ClipDataset object
-        """
-        data_set = ClipDataset(self.num_past_frames, self.num_future_frames, self.clips, self.transform, self.color_mode, self.min_lo, self.max_lo)
-
-        return data_set
-    
-    def __getClips__(self):
-        clips = []
-        frames_folders = os.listdir(self.frames_path)
-        frames_folders = [self.frames_path.joinpath(s) for s in frames_folders]
-        for subject in frames_folders:
-            actions = os.listdir(subject)
-            actions = [subject.joinpath(s) for s in actions]
-            for folder in actions:
-                img_files = sorted(list(folder.glob('*')))
-                clip_num = len(img_files) // self.clip_length
-                rem_num = len(img_files) % self.clip_length
-                img_files = img_files[rem_num // 2 : rem_num//2 + clip_num*self.clip_length]
-                for i in range(clip_num):
-                    clips.append(img_files[i*self.clip_length : (i+1)*self.clip_length])
-        return clips
 
 class BAIRDataset(object):
     """
@@ -814,7 +691,7 @@ class StochasticMovingMNIST(Dataset):
             train=train_flag,
             download=False,
             transform=transforms.Compose(
-                [transforms.Scale(self.digit_size),
+                [transforms.Resize(self.digit_size),
                  transforms.ToTensor()]))
 
         self.N = len(self.data) 
@@ -899,36 +776,6 @@ class StochasticMovingMNIST(Dataset):
 
         x[x>1] = 1.
         return x.transpose(0, 3, 1, 2)
-
-def create_occlude_MovingMNIST(ori_data_path, save_path, block_size = 20):
-    data = {}
-    np_arr = np.load(ori_data_path.absolute().as_posix())
-    for key in np_arr:
-        data[key] = np_arr[key]
-
-    pgbar = tqdm(desc = 'Processing...', total = data['clips'].shape[1])
-    for index in range(data['clips'].shape[1]):
-        clip_index = data['clips'][:, index, :]
-        psi, pei = clip_index[0, 0], clip_index[0, 0] + clip_index[0, 1]
-        past_clip = data['input_raw_data'][psi:pei, ...]
-        fsi, fei = clip_index[1, 0], clip_index[1, 0] + clip_index[1, 1]
-        future_clip = data['input_raw_data'][fsi:fei, ...]
-
-        _, _, H, W = past_clip.shape
-        top = random.randint(0, H-block_size)
-        left = random.randint(0, W-block_size)
-        #past_clip[:, :, top:top+block_size, left:left+block_size] = 0.5
-        future_clip[:, 0:3, top:top+block_size, left:left+block_size] = 0.5
-
-        data['input_raw_data'][psi:pei, ...] = past_clip
-        data['input_raw_data'][fsi:fei, ...] = future_clip
-
-        pgbar.update(1)
-    pgbar.close()
-
-    np.savez(save_path.absolute().as_posix(), input_raw_data = data['input_raw_data'], clips = data['clips'], dims = data['dims'])
-
-
 
 class VidResize(object):
     def __init__(self, *args, **resize_kwargs):
@@ -1170,10 +1017,6 @@ if __name__ == '__main__':
     num_past_frames = 10
     num_future_frames = 10
     transform = transforms.Compose([VidToTensor()])
-    Human_train_set = Human36MDataset('/store/travail/xiyex/Human36M/train', transform, 
-                                num_past_frames = num_past_frames, num_future_frames = num_future_frames)()
-    Human_val_set = Human36MDataset('/store/travail/xiyex/Human36M/valid', transform, 
-                                num_past_frames = num_past_frames, num_future_frames = num_future_frames)()
     whole_set = data.ConcatDataset([Human_train_set, Human_val_set])
     
     statistics = mean_std_compute(whole_set, torch.device('cuda:0'), color_mode = 'RGB')

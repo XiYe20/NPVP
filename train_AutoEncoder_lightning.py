@@ -1,22 +1,26 @@
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.callbacks import Callback
 from pytorch_lightning import loggers as pl_loggers
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
 from models import LitAE
-from models import L1Loss
 from utils import LitDataModule, VisCallbackAE, save_code_cfg
 
 import hydra
+from hydra import compose, initialize
 from omegaconf import DictConfig, OmegaConf
+import argparse
+from pathlib import Path
 
-@hydra.main(version_base=None, config_path=".", config_name="config")
+def parse_args():
+    parser = argparse.ArgumentParser(description=globals()['__doc__'])
+    parser.add_argument('--config_path', type=str, required=True, help='Path to configuration file')
+    args = parser.parse_args()
+    return args.config_path
+
+#@hydra.main(version_base=None, config_path=".", config_name="config")
 def main(cfg : DictConfig) -> None:
     #save the code and config
-    save_code_cfg(cfg, cfg.AE.ckpt_save_dir)
+    #save_code_cfg(cfg, cfg.AE.ckpt_save_dir)
 
     pl.seed_everything(cfg.Env.rand_seed, workers=True)
     #init model and dataloader
@@ -39,4 +43,8 @@ def main(cfg : DictConfig) -> None:
     trainer.fit(AE, data_module, ckpt_path=cfg.AE.resume_ckpt)
 
 if __name__ == '__main__':
-    main()
+    config_path = Path(parse_args())
+    initialize(version_base=None, config_path=str(config_path.parent))
+    cfg = compose(config_name=str(config_path.name))
+
+    main(cfg)

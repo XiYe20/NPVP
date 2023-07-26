@@ -42,8 +42,8 @@ class LitPredictor(pl.LightningModule):
         
         self.predictor = Predictor(cfg.Predictor.max_H, cfg.Predictor.max_W, cfg.Predictor.max_T, self.h_list, self.w_list, self.to_list, self.tp_list, 
                                    cfg.Predictor.embed_dim, cfg.Predictor.fuse_method, cfg.Predictor.param_free_norm_type, cfg.Predictor.evt_hidden_channels, 
-                                   cfg.Predictor.evt_n_layers, cfg.Predictor.stochastic, cfg.Predictor.transformer_layers, 
-                                   evt_former = cfg.Predictor.evt_former, learn_evt_token = cfg.Predictor.learn_evt_token, evt_former_num_layers = cfg.Predictor.evt_former_num_layers,
+                                   1, cfg.Predictor.stochastic, cfg.Predictor.transformer_layers, 
+                                   evt_former = cfg.Predictor.evt_former, learn_evt_token = False, evt_former_num_layers = cfg.Predictor.evt_former_num_layers,
                                    rand_context = cfg.Predictor.rand_context)
         self.training_step = self.training_step_no_gan
         if cfg.Predictor.use_gan:

@@ -4,23 +4,25 @@ from pytorch_lightning.callbacks import Callback
 from pytorch_lightning import loggers as pl_loggers
 from pytorch_lightning.plugins import PrecisionPlugin
 
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-from models import LitAE, Predictor, Discriminator, ResnetEncoder, ResnetDecoder, LitPredictor
-from models import L1Loss, Div_KL, GANLoss
-from utils import LitDataModule, VisCallbackPredictor, save_code_cfg
+from models import LitPredictor
+from utils import LitDataModule, VisCallbackPredictor
 
 import hydra
+from hydra import compose, initialize
 from omegaconf import DictConfig, OmegaConf
+import argparse
+from pathlib import Path
 
+def parse_args():
+    parser = argparse.ArgumentParser(description=globals()['__doc__'])
+    parser.add_argument('--config_path', type=str, required=True, help='Path to configuration file')
+    args = parser.parse_args()
+    return args.config_path
 
-@hydra.main(version_base=None, config_path=".", config_name="config")
+#@hydra.main(version_base=None, config_path=".", config_name="config")
 def main(cfg : DictConfig) -> None:
     #save the code and config
-    save_code_cfg(cfg, cfg.Predictor.ckpt_save_dir)
+    #save_code_cfg(cfg, cfg.Predictor.ckpt_save_dir)
 
     pl.seed_everything(cfg.Env.rand_seed, workers=True)
     #init model and dataloader
@@ -47,4 +49,8 @@ def main(cfg : DictConfig) -> None:
         trainer.fit(predictor, data_module, ckpt_path=cfg.Predictor.resume_ckpt)
 
 if __name__ == '__main__':
-    main()
+    config_path = Path(parse_args())
+    initialize(version_base=None, config_path=str(config_path.parent))
+    cfg = compose(config_name=str(config_path.name))
+
+    main(cfg)
