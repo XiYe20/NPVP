@@ -10,10 +10,10 @@ https://arxiv.org/abs/2210.05810v1
 Processed KTH dataset: https://drive.google.com/file/d/1RbJyGrYdIp4ROy8r0M-lLAbAMxTRQ-sd/view?usp=sharing \
 SM-MNIST: https://drive.google.com/file/d/1eSpXRojBjvE4WoIgeplUznFyRyI3X64w/view?usp=drive_link
 
-For other datasets, please download from the official website. Here we show the dataset folder structure.
+For other datasets, please download them from the official website. Here we show the dataset folder structure.
 
 #### BAIR
-Download the original BAIR dataset, use the /utils/read_BAIR_tfrecords.py to convert into frames as follows:
+Please download the original BAIR dataset and utilize the "/utils/read_BAIR_tfrecords.py" script to convert it into frames as follows:
 
 /BAIR \
   &nbsp;&nbsp;&nbsp;&nbsp; test/ \
@@ -34,7 +34,7 @@ Download the original BAIR dataset, use the /utils/read_BAIR_tfrecords.py to con
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; example_... 
 
 #### Cityscapes
-Download "leftImg8bit_sequence_trainvaltest.zip" from the official website. Center crop and resize all the frames to be the size of 128X128. Store all the frames as follows:
+Please download "leftImg8bit_sequence_trainvaltest.zip" from the official website. Center crop and resize all the frames to the size of 128X128. Save all the frames as follows:
 
 /Cityscapes \
   &nbsp;&nbsp;&nbsp;&nbsp; test/ \
@@ -57,8 +57,8 @@ Download "leftImg8bit_sequence_trainvaltest.zip" from the official website. Cent
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ....
 
 #### KITTI
-Download the raw data (synced+rectified) from KITTI official website. Center crop and resize to be the resolution of 128X128.
-Store all the frames as follows:
+Please download the raw data (synced+rectified) from KITTI official website. Center crop and resize all the frames to the resolution of 128X128.
+Save all the frames as follows:
 
 /KITTI \
   &nbsp;&nbsp;&nbsp;&nbsp; 2011_09_26_drive_0001_sync/ \
@@ -71,7 +71,7 @@ Store all the frames as follows:
 
 ## Training
 ### Stage 1: CNN autoencoder training
-Train the autoencoder firstly, save the checkpoint. All the configuration files for Stage 1 training are stored under "./configs" directory, with the file name of "*_Autoencoder.yaml". Please read the configuration file before training, modify the directory for dataset, checkpoints saving, tensorboard log saving, ect., based on your own needs.
+Train the autoencoder and save the checkpoint. Configuration files for Stage 1 training are located in the "./configs" directory, with filenames ending in "*_Autoencoder.yaml". Before training, review the configuration file and adjust the dataset directory, checkpoint saving, TensorBoard log saving, etc., as needed.
 
 Usage example:
 ```
@@ -80,7 +80,7 @@ python train_AutoEncoder_lightning.py --config_path ./configs/config_KTH_Autoenc
 
 ### Stage 2: NP-based Predictor training
 
-Given a trained Autoencoder from stage 1, we can load it for the training of NP-based Predictor. All the configuration files for Stage 2 training are stored under "./configs" directory, with the file name of "*_NPVP-D.yaml" or "_NPVP-S.yaml". Please read the configuration file before training, modify the directory for dataset, checkpoints saving, tensorboard log saving, ect., based on your own needs.
+With a trained Autoencoder from stage 1, we can load it for the training of the NP-based Predictor in stage 2. Configuration files for Stage 2 training are located in the "./configs" directory, with filenames ending in "*_NPVP-D.yaml" or "_NPVP-S.yaml". Prior to training, review the configuration file and adjust the dataset directory, checkpoint saving, TensorBoard log saving, etc., according to your specific requirements.
 
 Usage example:
 ```
@@ -90,7 +90,7 @@ python train_Predictor_lightning.py --config_path ./configs/config_KTH_Unified_N
 ## Inference
 Please read the inference.ipynb for the inference example of a KTH unified model.
 
-Step 1: Download the process KTH dataset and decompress
+Step 1: Download the process KTH dataset
 
 Step 2: Download the Autoencoder checkpoint: https://drive.google.com/drive/folders/1eji1SxfT8do8TnWNPZqmhuOqxQZuaEpo?usp=sharing
 
