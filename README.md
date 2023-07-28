@@ -97,3 +97,16 @@ Step 2: Download the Autoencoder checkpoint: https://drive.google.com/drive/fold
 Step 3: Download the Unified_NPVP-S checkpoint: https://drive.google.com/drive/folders/1knqw-KuWDSx6E-tG8jiOEG1G3BYMJJIf?usp=sharing
 
 Step 4: Read and run "inference.ipynb".
+
+### Citing
+   
+Please cite the paper if you find our work is helpful.
+```
+@inproceedings{ye2023unified,
+  title={A Unified Model for Continuous Conditional Video Prediction},
+  author={Ye, Xi and Bilodeau, Guillaume-Alexandre},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={3603--3612},
+  year={2023}
+}
+```
