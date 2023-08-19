@@ -105,7 +105,7 @@ Please cite the paper if you find our work is helpful.
 @inproceedings{ye2023unified,
   title={A Unified Model for Continuous Conditional Video Prediction},
   author={Ye, Xi and Bilodeau, Guillaume-Alexandre},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Workshops},
   pages={3603--3612},
   year={2023}
 }
