@@ -3,9 +3,6 @@
 # NPVP: A unified model for continuous conditional video prediction
 https://openaccess.thecvf.com/content/CVPR2023W/Precognition/html/Ye_A_Unified_Model_for_Continuous_Conditional_Video_Prediction_CVPRW_2023_paper.html
 
-# Continuous conditional video synthesis by neural processes
-https://arxiv.org/abs/2210.05810v1
-
 ### Preparing Datasets
 Processed KTH dataset: https://drive.google.com/file/d/1RbJyGrYdIp4ROy8r0M-lLAbAMxTRQ-sd/view?usp=sharing \
 SM-MNIST: https://drive.google.com/file/d/1eSpXRojBjvE4WoIgeplUznFyRyI3X64w/view?usp=drive_link
